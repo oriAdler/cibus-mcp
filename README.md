@@ -1,5 +1,7 @@
 ## Pluxee MCP Server
 
+![Pluxee MCP Mascot](assets/mascot.png)
+
 A minimal MCP server that exposes tools to interact with Pluxee (IL) APIs. It now runs as a plain Python script and includes an embedded login flow that acquires the Pluxee token via a local browser when needed.
 
 ### Tools

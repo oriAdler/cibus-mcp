@@ -1,0 +1,67 @@
+## Pluxee MCP Server
+
+A minimal MCP server that exposes tools to interact with Pluxee (IL) APIs. It now runs as a plain Python script and includes an embedded login flow that acquires the Pluxee token via a local browser when needed.
+
+### Tools
+- **get_budget_summary()**: Returns `{budget, budget_balance, cycle}` as JSON string.
+- **get_orders_history(from_date, to_date)**: Returns orders between dates (format `DD/MM/YYYY`).
+- **login()**: Opens a browser window to authenticate and capture the `token` cookie. Use this if the token is missing/expired.
+
+### Prerequisites
+- **Python 3.11+**
+- **Playwright and browsers**: `pip install playwright` and then `playwright install`
+- **Cursor** with MCP enabled
+
+### Setup
+From the repo root:
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+# Playwright needs browser binaries
+playwright install
+```
+
+### Run with Cursor
+Configure `/.cursor/mcp.json` to run the Python script (already committed here):
+```json
+{
+  "mcpServers": {
+    "pluxee": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "pluxee_mcp_server.py"
+      ],
+      "env": { "MCP_TRANSPORT": "stdio" },
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}
+```
+Then open Cursor. On first use of any tool, if no token is available, the server will open a browser window to let you log in. After successful login, the token is cached in `~/.pluxee-profile/token` for reuse.
+
+### Manual token (optional)
+If you prefer to set the token yourself (or run headless):
+```bash
+export PLUXEE_TOKEN=$(python scripts/grab_token.py)
+```
+The server will use `PLUXEE_TOKEN` if present.
+
+### Optional: Run in a container
+You can still build and run this server in a container for isolation, but the browser-based login must be done on the host.
+```bash
+podman build -t localhost/pluxee-mcp:latest .
+# or: docker build -t localhost/pluxee-mcp:latest .
+```
+If running in a container, pass `PLUXEE_TOKEN` via env. See the previous README version for a full container-only setup.
+
+### Troubleshooting
+- **Playwright not installed**: Install with `pip install playwright` then `playwright install`.
+- **Token not found**: Use the `login()` tool or export `PLUXEE_TOKEN`.
+- **401 Unauthorized**: The server will prompt re-login by opening the browser once; if it persists, log out and log back in via `login()`.
+
+### Security
+- Do not commit tokens or secrets to the repo.
+- Tokens are cached at `~/.pluxee-profile/token`. Delete this file to force re-login. 

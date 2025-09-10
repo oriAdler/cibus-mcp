@@ -37,7 +37,7 @@ python3 -m venv .venv
   }
 }
 ```
-Then open Cursor. On first use of any tool, if no token is available, the server will open a browser window to let you log in. After successful login, the token is cached in `~/.pluxee-profile/token` for reuse.
+Open Cursor from this project folder (repo root), so the relative venv path (`./.venv/bin/python`) resolves. On first use of any tool, if no token is available, the server will open a browser window to let you log in. After successful login, the token is cached in `~/.pluxee-profile/token` for reuse.
 
 ### Troubleshooting
 - **Playwright not installed**: Install with `pip install playwright` then `playwright install`.

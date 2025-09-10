@@ -2,7 +2,7 @@
   "mcpServers": {
     "pluxee": {
       "type": "stdio",
-      "command": "/home/oadler/github.com/cibus-mcp/.venv/bin/python",
+      "command": "./.venv/bin/python",
       "args": [
         "pluxee_mcp_server.py"
       ],

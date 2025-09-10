@@ -16,9 +16,9 @@ A minimal MCP server that exposes tools to interact with Pluxee (IL) APIs. It no
 From the repo root:
 ```bash
 python3 -m venv .venv
-/home/oadler/github.com/cibus-mcp/.venv/bin/pip install -r requirements.txt
+./.venv/bin/pip install -r requirements.txt
 # Playwright needs browser binaries
-/home/oadler/github.com/cibus-mcp/.venv/bin/playwright install
+./.venv/bin/playwright install
 ```
 
 ### Run with Cursor
@@ -28,7 +28,7 @@ python3 -m venv .venv
   "mcpServers": {
     "pluxee": {
       "type": "stdio",
-      "command": "/home/oadler/github.com/cibus-mcp/.venv/bin/python",
+      "command": "./.venv/bin/python",
       "args": ["pluxee_mcp_server.py"],
       "env": { "MCP_TRANSPORT": "stdio" },
       "disabled": false,

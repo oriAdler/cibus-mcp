@@ -154,26 +154,6 @@ async def get_orders_history(from_date: str, to_date: str) -> str:
         r.raise_for_status()
         return json.dumps(r.json())
 
-@mcp.tool()
-async def get_nearby_restaurants(area_hash: str, lang: str = "he") -> str:
-    """List available restaurants for a given area hash. Returns raw JSON string.
-
-    - area_hash: The location hash as used by Pluxee web (e.g. from the site scan).
-    - lang: UI language, defaults to 'he'.
-    """
-    await ensure_token()
-    query = f"hash={quote(area_hash)}&lang={quote(lang)}"
-    url = f"{BASE_URL}/api/rest_scan.py?{query}"
-    headers = await _headers()
-    headers["accept-language"] = lang
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        r = await client.get(url, headers=headers)
-        if r.status_code == 401:
-            await ensure_token(force_refresh=True)
-            r = await client.get(url, headers=headers)
-        r.raise_for_status()
-        return json.dumps(r.json())
-
 if __name__ == "__main__":
     transport = os.environ.get("MCP_TRANSPORT", "stdio")
     mcp.run(transport=transport) 

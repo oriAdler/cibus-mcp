@@ -12,27 +12,24 @@ A minimal MCP server that exposes tools to interact with Pluxee (IL) APIs. It no
 - **Playwright and browsers**: `pip install playwright` and then `playwright install`
 - **Cursor** with MCP enabled
 
-### Setup
+### Setup (one-time)
 From the repo root:
 ```bash
 python3 -m venv .venv
-. .venv/bin/activate
-pip install -r requirements.txt
+/home/oadler/github.com/cibus-mcp/.venv/bin/pip install -r requirements.txt
 # Playwright needs browser binaries
-playwright install
+/home/oadler/github.com/cibus-mcp/.venv/bin/playwright install
 ```
 
 ### Run with Cursor
-Configure `/.cursor/mcp.json` to run the Python script (already committed here):
+`/.cursor/mcp.json` is configured to use the venv Python directly:
 ```json
 {
   "mcpServers": {
     "pluxee": {
       "type": "stdio",
-      "command": "python3",
-      "args": [
-        "pluxee_mcp_server.py"
-      ],
+      "command": "/home/oadler/github.com/cibus-mcp/.venv/bin/python",
+      "args": ["pluxee_mcp_server.py"],
       "env": { "MCP_TRANSPORT": "stdio" },
       "disabled": false,
       "alwaysAllow": []
@@ -41,8 +38,6 @@ Configure `/.cursor/mcp.json` to run the Python script (already committed here):
 }
 ```
 Then open Cursor. On first use of any tool, if no token is available, the server will open a browser window to let you log in. After successful login, the token is cached in `~/.pluxee-profile/token` for reuse.
-
-
 
 ### Troubleshooting
 - **Playwright not installed**: Install with `pip install playwright` then `playwright install`.

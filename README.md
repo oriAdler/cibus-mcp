@@ -8,6 +8,9 @@ A minimal MCP server that exposes tools to interact with Pluxee (IL) APIs. It no
 - **get_budget_summary()**: Returns `{budget, budget_balance, cycle}` as JSON string.
 - **get_orders_history(from_date, to_date)**: Returns orders between dates (format `DD/MM/YYYY`).
 - **login()**: Opens a browser window to authenticate and capture the `token` cookie. Use this if the token is missing/expired.
+- **get_nearby_restaurants(area_hash, lang="he")**: Returns the raw JSON list of restaurants for a given area hash.
+
+Tip: The `area_hash` appears in calls to `/api/rest_scan.py?hash=...` on the Pluxee site. You can obtain it by inspecting network requests in the browser devtools or sharing one provided by your workplace.
 
 ### Prerequisites
 - **Python 3.11+**

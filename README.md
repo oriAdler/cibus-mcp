@@ -42,24 +42,11 @@ Configure `/.cursor/mcp.json` to run the Python script (already committed here):
 ```
 Then open Cursor. On first use of any tool, if no token is available, the server will open a browser window to let you log in. After successful login, the token is cached in `~/.pluxee-profile/token` for reuse.
 
-### Manual token (optional)
-If you prefer to set the token yourself (or run headless):
-```bash
-export PLUXEE_TOKEN=$(python scripts/grab_token.py)
-```
-The server will use `PLUXEE_TOKEN` if present.
 
-### Optional: Run in a container
-You can still build and run this server in a container for isolation, but the browser-based login must be done on the host.
-```bash
-podman build -t localhost/pluxee-mcp:latest .
-# or: docker build -t localhost/pluxee-mcp:latest .
-```
-If running in a container, pass `PLUXEE_TOKEN` via env. See the previous README version for a full container-only setup.
 
 ### Troubleshooting
 - **Playwright not installed**: Install with `pip install playwright` then `playwright install`.
-- **Token not found**: Use the `login()` tool or export `PLUXEE_TOKEN`.
+- **Token not found**: Use the `login()` tool.
 - **401 Unauthorized**: The server will prompt re-login by opening the browser once; if it persists, log out and log back in via `login()`.
 
 ### Security

@@ -23,8 +23,6 @@ From the repo root, run the installer to set up a venv, install dependencies, in
 # if not executable: bash install.sh
 ```
 
-**Important**:  After successful login, the token is cached in `~/.pluxee-profile/token` for reuse.
-
 ### Run with Cursor (global, any folder)
 Create or edit `~/.cursor/mcp.json` and set `command` to the absolute path that the installer printed (line starting with `Absolute path:`). You can also print it any time with:
 ```bash

@@ -26,13 +26,19 @@ From the repo root, run the installer to set up a venv, install dependencies, in
 **Important**:  After successful login, the token is cached in `~/.pluxee-profile/token` for reuse.
 
 ### Run with Cursor (global, any folder)
-Create or edit `~/.cursor/mcp.json` to reference the wrapper. Prefer the absolute path to avoid modifying PATH; using the command name works too if `~/.local/bin` is already on your PATH.
+Create or edit `~/.cursor/mcp.json` and set `command` to the absolute path that the installer printed (line starting with `Absolute path:`). You can also print it any time with:
+```bash
+echo "$HOME/.local/bin/pluxee-mcp"
+```
+The installer also wrote a ready-to-copy example at `mcp.global.example.json`.
+
+Use this structure, replacing the command value with your absolute path:
 ```json
 {
   "mcpServers": {
     "pluxee": {
       "type": "stdio",
-      "command": "/home/oadler/.local/bin/pluxee-mcp",
+      "command": "<ABSOLUTE_PATH_FROM_INSTALLER>",
       "env": { "MCP_TRANSPORT": "stdio" },
       "disabled": false,
       "alwaysAllow": []
@@ -54,7 +60,6 @@ Alternative if `~/.local/bin` is already on PATH:
   }
 }
 ```
-With this global config, you can keep or remove the project-local `/.cursor/mcp.json`. The global one will work from any folder.
 
 ### Troubleshooting
 - **Playwright not installed**: Install with `pip install playwright` then `playwright install`.

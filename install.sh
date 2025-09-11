@@ -54,6 +54,29 @@ chmod +x "$WRAPPER_PATH"
 
 echo "Created wrapper: $WRAPPER_PATH"
 
+# Suggest ready-to-copy global Cursor config
+read -r -d '' SNIPPET <<JSON
+{
+  "mcpServers": {
+    "pluxee": {
+      "type": "stdio",
+      "command": "$WRAPPER_PATH",
+      "env": { "MCP_TRANSPORT": "stdio" },
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}
+JSON
+
+echo "\nSuggested ~/.cursor/mcp.json content (uses your absolute path):"
+echo "$SNIPPET"
+
+# Write example file for convenience
+EXAMPLE_FILE="$PROJECT_ROOT/mcp.global.example.json"
+echo "$SNIPPET" > "$EXAMPLE_FILE"
+echo "Wrote example to: $EXAMPLE_FILE"
+
 echo "Done. Configure Cursor to use either:"
 echo "  - Command name (if ~/.local/bin is already on PATH): pluxee-mcp"
 echo "  - Absolute path: $WRAPPER_PATH" 

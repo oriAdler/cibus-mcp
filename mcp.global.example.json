@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "pluxee": {
+      "type": "stdio",
+      "command": "/home/oadler/.local/bin/pluxee-mcp",
+      "env": { "MCP_TRANSPORT": "stdio" },
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}

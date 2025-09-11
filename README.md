@@ -16,7 +16,12 @@ A minimal MCP server that exposes tools to interact with Pluxee (IL) APIs. It no
 - 🎭 **Playwright**: Already installed by the installer. If you skip `install.sh`, run: `pip install playwright && playwright install`
 - 🖥️ **Cursor** or **Claude Code** with MCP enabled
 
-### Quick install (any machine, no sudo)
+### Platform support
+- Linux: supported (tested on Fedora)
+- macOS: supported
+- Windows: supported via WSL2; native Windows not yet supported
+
+### Quick install (Linux/macOS, no sudo)
 From the repo root, run the installer to set up a venv, install dependencies, install Playwright browsers, and create the `pluxee-mcp` wrapper in `~/.local/bin`:
 ```bash
 ./install.sh

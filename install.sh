@@ -52,7 +52,8 @@ exec "$VENV_DIR/bin/python" "$PROJECT_ROOT/pluxee_mcp_server.py"
 EOF
 chmod +x "$WRAPPER_PATH"
 
-echo "Created wrapper: $WRAPPER_PATH"
+echo "Wrapper created. Copy this path into your ~/.cursor/mcp.json 'command' field:"
+echo "$WRAPPER_PATH"
 
 # Suggest ready-to-copy global Cursor config
 read -r -d '' SNIPPET <<JSON

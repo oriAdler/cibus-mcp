@@ -7,6 +7,8 @@ A minimal MCP server that exposes tools to interact with Pluxee (IL) APIs. It no
 ### Tools
 - **get_budget_summary()**: Returns `{budget, budget_balance, cycle}` as JSON string.
 - **get_orders_history(from_date, to_date)**: Returns orders between dates (format `DD/MM/YYYY`).
+- **get_nearby_restaurants()**: Lists nearby restaurants using stored area hash. Returns restaurant data as JSON.
+- **get_restaurant_menu(restaurant_id)**: Fetches menu tree for a specific restaurant. Returns menu data as JSON.
 - **login()**: Opens a browser window to authenticate and capture the `token` cookie. Use this if the token is missing/expired.
 
 ### Prerequisites
@@ -14,24 +16,26 @@ A minimal MCP server that exposes tools to interact with Pluxee (IL) APIs. It no
 - **Playwright and browsers**: `pip install playwright` and then `playwright install`
 - **Cursor** with MCP enabled
 
-### Setup (one-time)
-From the repo root:
+### Quick install (any machine, no sudo)
+From the repo root, run the installer to set up a venv, install dependencies, install Playwright browsers, and create the `pluxee-mcp` wrapper in `~/.local/bin`:
 ```bash
-python3 -m venv .venv
-./.venv/bin/pip install -r requirements.txt
-# Playwright needs browser binaries
-./.venv/bin/playwright install
+./install.sh
+# if not executable: bash install.sh
 ```
+If the installer adds `~/.local/bin` to your PATH, restart your shell (or `source ~/.bashrc` / `~/.zshrc`).
 
-### Run with Cursor
-`/.cursor/mcp.json` is configured to use the venv Python directly:
+
+
+**Important**:  After successful login, the token is cached in `~/.pluxee-profile/token` for reuse.
+
+### Run with Cursor (global, any folder)
+Create or edit `~/.cursor/mcp.json` to point at the `pluxee-mcp` wrapper created by the installer. This lets you open Cursor from any directory:
 ```json
 {
   "mcpServers": {
     "pluxee": {
       "type": "stdio",
-      "command": "./.venv/bin/python",
-      "args": ["pluxee_mcp_server.py"],
+      "command": "pluxee-mcp",
       "env": { "MCP_TRANSPORT": "stdio" },
       "disabled": false,
       "alwaysAllow": []
@@ -39,7 +43,7 @@ python3 -m venv .venv
   }
 }
 ```
-**Important**: Open Cursor from this project folder (repo root) so the relative venv path (`./.venv/bin/python`) resolves. On first use of any tool, if no token is available, the server will open a browser window to let you log in. After successful login, the token is cached in `~/.pluxee-profile/token` for reuse.
+With this global config, you can keep or remove the project-local `/.cursor/mcp.json`. The global one will work from any folder.
 
 ### Troubleshooting
 - **Playwright not installed**: Install with `pip install playwright` then `playwright install`.

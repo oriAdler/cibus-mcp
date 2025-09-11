@@ -5,16 +5,16 @@ A minimal MCP server that exposes tools to interact with Pluxee (IL) APIs. It no
 <p align="center"><img src="assets/mascot.png" alt="Pluxee MCP Mascot" width="280"></p>
 
 ### Tools
-- **get_budget_summary()**: Returns `{budget, budget_balance, cycle}` as JSON string.
-- **get_orders_history(from_date, to_date)**: Returns orders between dates (format `DD/MM/YYYY`).
-- **get_nearby_restaurants()**: Lists nearby restaurants using stored area hash. Returns restaurant data as JSON.
-- **get_restaurant_menu(restaurant_id)**: Fetches menu tree for a specific restaurant. Returns menu data as JSON.
-- **login()**: Opens a browser window to authenticate and capture the `token` cookie. Use this if the token is missing/expired.
+- 💰 **get_budget_summary()**: Budget & balance info
+- 📋 **get_orders_history(from_date, to_date)**: Order history (`DD/MM/YYYY`)
+- 🏪 **get_nearby_restaurants()**: Nearby restaurants list
+- 🍽️ **get_restaurant_menu(restaurant_id)**: Restaurant menu data
+- 🔐 **login()**: Browser auth for token
 
 ### Prerequisites
-- **Python 3.11+**
-- **Playwright and browsers**: `pip install playwright` and then `playwright install`
-- **Cursor** with MCP enabled
+- 🐍 **Python 3.11+**
+- 🎭 **Playwright**: `pip install playwright && playwright install`
+- 🖥️ **Cursor** or **Claude Code** with MCP enabled
 
 ### Quick install (any machine, no sudo)
 From the repo root, run the installer to set up a venv, install dependencies, install Playwright browsers, and create the `pluxee-mcp` wrapper in `~/.local/bin`:
@@ -59,6 +59,16 @@ Alternative if `~/.local/bin` is already on PATH:
     }
   }
 }
+```
+
+### Run with Claude Code
+After running the installer, you can add the server to Claude Code:
+```bash
+claude mcp add pluxee --scope user $HOME/.local/bin/pluxee-mcp
+```
+Verify it's connected:
+```bash
+claude mcp list
 ```
 
 ### Troubleshooting

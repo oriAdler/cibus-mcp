@@ -1,115 +1,22 @@
-from typing import Any, Optional
+from typing import Any
 import os
 import json
-import asyncio
-import time
-from pathlib import Path
 from urllib.parse import quote
 import httpx
 from mcp.server.fastmcp import FastMCP
 
-BASE_URL = os.environ.get("PLUXEE_BASE_URL", "https://api.consumers.pluxee.co.il")
-TOKEN: str = os.environ.get("PLUXEE_TOKEN", "")
-
-PROFILE_DIR = Path.home() / ".pluxee-profile"
-START_URL = "https://consumers.pluxee.co.il/"
-COOKIE_DOMAINS = [
-    "https://api.consumers.pluxee.co.il",
-    "https://consumers.pluxee.co.il",
-]
-TIMEOUT_SECONDS = 180
+from helpers import (
+    BASE_URL,
+    build_headers,
+    ensure_token,
+    maybe_store_area_hash,
+    AREA_HASH_FILE,
+)
 
 mcp = FastMCP("pluxee")
 
 async def _headers() -> dict[str, str]:
-    headers = {
-        "accept": "application/json, text/plain, */*",
-        "content-type": "application/json; charset=utf-8",
-        "application-id": "E5D5FEF5-A05E-4C64-AEBA-BA0CECA0E402",
-        "origin": "https://consumers.pluxee.co.il",
-        "referer": "https://consumers.pluxee.co.il/",
-    }
-    if TOKEN:
-        headers["cookie"] = f"token={TOKEN}"
-    return headers
-
-# Token acquisition helpers
-
-def _find_token_cookie_sync(context) -> Optional[str]:
-    for domain in COOKIE_DOMAINS:
-        try:
-            for c in context.cookies(domain):
-                if c.get("name") == "token" and c.get("value"):
-                    return c.get("value")
-        except Exception:
-            pass
-    return None
-
-async def _obtain_token_via_playwright() -> str:
-    def _sync_flow() -> str:
-        try:
-            from playwright.sync_api import sync_playwright
-        except Exception:
-            raise RuntimeError(
-                "Playwright not installed. Install with: pip install playwright && playwright install"
-            )
-        PROFILE_DIR.mkdir(parents=True, exist_ok=True)
-        with sync_playwright() as p:
-            ctx = p.chromium.launch_persistent_context(str(PROFILE_DIR), headless=False)
-            try:
-                page = ctx.new_page()
-                page.goto(START_URL)
-                deadline = time.time() + TIMEOUT_SECONDS
-                token: Optional[str] = None
-                while time.time() < deadline and not token:
-                    token = _find_token_cookie_sync(ctx)
-                    if token:
-                        break
-                    time.sleep(1)
-                if not token:
-                    raise RuntimeError(
-                        "Token not found. Complete login/OTP in the opened browser and retry."
-                    )
-                return token
-            finally:
-                try:
-                    ctx.close()
-                except Exception:
-                    pass
-    return await asyncio.to_thread(_sync_flow)
-
-async def ensure_token(force_refresh: bool = False) -> str:
-    global TOKEN
-    if not force_refresh and TOKEN:
-        return TOKEN
-
-    # 1) Env var
-    env_token = os.environ.get("PLUXEE_TOKEN", "").strip()
-    if env_token and not force_refresh:
-        TOKEN = env_token
-        return TOKEN
-
-    # 2) Persisted file
-    token_file = PROFILE_DIR / "token"
-    if token_file.exists() and not force_refresh:
-        try:
-            file_token = token_file.read_text().strip()
-            if file_token:
-                TOKEN = file_token
-                return TOKEN
-        except Exception:
-            pass
-
-    # 3) Interactive login via Playwright
-    new_token = await _obtain_token_via_playwright()
-    TOKEN = new_token
-    try:
-        PROFILE_DIR.mkdir(parents=True, exist_ok=True)
-        token_file.write_text(TOKEN)
-    except Exception:
-        # Non-fatal if we cannot persist
-        pass
-    return TOKEN
+    return await build_headers()
 
 @mcp.tool()
 async def login() -> str:
@@ -125,9 +32,14 @@ async def _get_user_info() -> dict[str, Any]:
         if r.status_code == 401:
             # Try one refresh cycle, then fail
             await ensure_token(force_refresh=True)
-            r = await client.get(url, headers=await _headers())
+        r = await client.get(url, headers=await _headers())
         r.raise_for_status()
-        return r.json()
+        info = r.json()
+        try:
+            await maybe_store_area_hash(info if isinstance(info, dict) else {})
+        except Exception:
+            pass
+        return info
 
 @mcp.tool()
 async def get_budget_summary() -> str:
@@ -151,6 +63,96 @@ async def get_orders_history(from_date: str, to_date: str) -> str:
         if r.status_code == 401:
             await ensure_token(force_refresh=True)
             r = await client.post(url, headers=await _headers(), json=payload)
+        r.raise_for_status()
+        return json.dumps(r.json())
+
+@mcp.tool()
+async def get_nearby_restaurants(lang: str = "he") -> str:
+    """List nearby restaurants using the stored area hash. Returns raw JSON string.
+    If the area hash is missing, fetch user info to compute it, then retry.
+    """
+    await _get_user_info()  # ensures token and attempts to store area hash
+
+    area_hash = os.environ.get("PLUXEE_AREA_HASH", "").strip()
+    if not area_hash and AREA_HASH_FILE.exists():
+        try:
+            area_hash = AREA_HASH_FILE.read_text().strip()
+        except Exception:
+            area_hash = ""
+
+    if not area_hash:
+        return json.dumps({
+            "error": "missing_area_hash",
+            "message": "Area hash not found. Ensure you've logged in and that we could resolve your default address."
+        })
+
+    query = f"hash={quote(area_hash)}&lang={quote(lang)}"
+    url = f"{BASE_URL}/api/rest_scan.py?{query}"
+    headers = await _headers()
+    headers["accept-language"] = lang
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        r = await client.get(url, headers=headers)
+        if r.status_code == 401:
+            await ensure_token(force_refresh=True)
+            r = await client.get(url, headers=headers)
+        r.raise_for_status()
+        return json.dumps(r.json())
+
+@mcp.tool()
+async def get_restaurant_menu(
+    restaurant_id: int,
+    lang: str = "he",
+    order_type: int = 1,
+    element_type_deep: int = 16,
+) -> str:
+    """Fetch menu tree for a specific restaurant. Returns raw JSON string.
+    Uses user's company id and default address id automatically.
+    """
+    info = await _get_user_info()
+
+    # Resolve company id
+    comp_id: int | None = None
+    for key in ("comp_id", "company_id"):
+        v = info.get(key)
+        if isinstance(v, int):
+            comp_id = v
+            break
+        if isinstance(v, str) and v.isdigit():
+            comp_id = int(v)
+            break
+
+    # Resolve address id (prefer default, then business/private)
+    addr_id: int | None = None
+    for key in ("default_addr_id", "biz_addr_id", "private_addr_id"):
+        v = info.get(key)
+        if isinstance(v, int) and v > 0:
+            addr_id = v
+            break
+
+    if not comp_id or not addr_id:
+        return json.dumps({
+            "error": "missing_ids",
+            "message": "Could not determine company or address id from user info. Please login and try again."
+        })
+
+    query = (
+        f"restaurant_id={quote(str(restaurant_id))}"
+        f"&comp_id={quote(str(comp_id))}"
+        f"&order_type={quote(str(order_type))}"
+        f"&element_type_deep={quote(str(element_type_deep))}"
+        f"&lang={quote(lang)}"
+        f"&address_id={quote(str(addr_id))}"
+    )
+    url = f"{BASE_URL}/api/rest_menu_tree.py?{query}"
+
+    headers = await _headers()
+    headers["accept-language"] = lang
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        r = await client.get(url, headers=headers)
+        if r.status_code == 401:
+            await ensure_token(force_refresh=True)
+            r = await client.get(url, headers=headers)
         r.raise_for_status()
         return json.dumps(r.json())
 

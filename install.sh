@@ -56,7 +56,7 @@ echo "Wrapper created. Copy this path into your ~/.cursor/mcp.json 'command' fie
 echo "$WRAPPER_PATH"
 
 # Suggest ready-to-copy global Cursor config
-read -r -d '' SNIPPET <<JSON
+SNIPPET=$(cat <<JSON
 {
   "mcpServers": {
     "pluxee": {
@@ -69,13 +69,15 @@ read -r -d '' SNIPPET <<JSON
   }
 }
 JSON
+)
 
-echo "\nSuggested ~/.cursor/mcp.json content (uses your absolute path):"
-echo "$SNIPPET"
+echo
+echo "Suggested ~/.cursor/mcp.json content (uses your absolute path):"
+printf '%s\n' "$SNIPPET"
 
 # Write example file for convenience
 EXAMPLE_FILE="$PROJECT_ROOT/mcp.global.example.json"
-echo "$SNIPPET" > "$EXAMPLE_FILE"
+printf '%s\n' "$SNIPPET" > "$EXAMPLE_FILE"
 echo "Wrote example to: $EXAMPLE_FILE"
 
 echo "Done. Configure Cursor to use either:"

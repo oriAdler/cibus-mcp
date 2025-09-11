@@ -13,7 +13,7 @@ A minimal MCP server that exposes tools to interact with Pluxee (IL) APIs. It no
 
 ### Prerequisites
 - 🐍 **Python 3.11+**
-- 🎭 **Playwright**: `pip install playwright && playwright install`
+- 🎭 **Playwright**: Already installed by the installer. If you skip `install.sh`, run: `pip install playwright && playwright install`
 - 🖥️ **Cursor** or **Claude Code** with MCP enabled
 
 ### Quick install (any machine, no sudo)

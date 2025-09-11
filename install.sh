@@ -5,7 +5,6 @@ set -euo pipefail
 # - Creates/updates a project-local venv
 # - Installs Python deps and Playwright browsers
 # - Creates ~/.local/bin/pluxee-mcp wrapper that points to this checkout
-# - Ensures ~/.local/bin is on PATH (for current shell in future sessions)
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="$PROJECT_ROOT/.venv"
@@ -55,28 +54,6 @@ chmod +x "$WRAPPER_PATH"
 
 echo "Created wrapper: $WRAPPER_PATH"
 
-# Ensure ~/.local/bin on PATH for future shells
-if ! echo ":$PATH:" | grep -q ":$HOME/.local/bin:"; then
-	SHELL_NAME="$(basename "${SHELL:-bash}")"
-	RC_FILE="$HOME/.bashrc"
-	if [[ "$SHELL_NAME" == "zsh" ]]; then
-		RC_FILE="$HOME/.zshrc"
-	fi
-	if [[ -f "$RC_FILE" ]]; then
-		echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$RC_FILE"
-		echo "Added ~/.local/bin to PATH in $RC_FILE. Restart your shell or run: source $RC_FILE"
-	else
-		# Fallback: create .bashrc if nothing suitable exists
-		echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-		echo "Added ~/.local/bin to PATH in ~/.bashrc. Restart your shell or run: source ~/.bashrc"
-	fi
-fi
-
-# Show where the command resolves now
-if command -v pluxee-mcp >/dev/null 2>&1; then
-	echo "pluxee-mcp is available at: $(command -v pluxee-mcp)"
-else
-	echo "Note: pluxee-mcp not yet on current PATH. After restarting your shell, it will be available."
-fi
-
-echo "Done. You can now configure Cursor globally to run 'pluxee-mcp' from any folder." 
+echo "Done. Configure Cursor to use either:"
+echo "  - Command name (if ~/.local/bin is already on PATH): pluxee-mcp"
+echo "  - Absolute path: $WRAPPER_PATH" 

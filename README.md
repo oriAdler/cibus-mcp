@@ -22,14 +22,25 @@ From the repo root, run the installer to set up a venv, install dependencies, in
 ./install.sh
 # if not executable: bash install.sh
 ```
-If the installer adds `~/.local/bin` to your PATH, restart your shell (or `source ~/.bashrc` / `~/.zshrc`).
-
-
 
 **Important**:  After successful login, the token is cached in `~/.pluxee-profile/token` for reuse.
 
 ### Run with Cursor (global, any folder)
-Create or edit `~/.cursor/mcp.json` to point at the `pluxee-mcp` wrapper created by the installer. This lets you open Cursor from any directory:
+Create or edit `~/.cursor/mcp.json` to reference the wrapper. Prefer the absolute path to avoid modifying PATH; using the command name works too if `~/.local/bin` is already on your PATH.
+```json
+{
+  "mcpServers": {
+    "pluxee": {
+      "type": "stdio",
+      "command": "/home/oadler/.local/bin/pluxee-mcp",
+      "env": { "MCP_TRANSPORT": "stdio" },
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}
+```
+Alternative if `~/.local/bin` is already on PATH:
 ```json
 {
   "mcpServers": {
